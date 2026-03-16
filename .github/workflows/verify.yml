@@ -1,0 +1,30 @@
+name: Nyx Quality Gates
+
+on: [pull_request]
+
+jobs:
+  rust-check:
+    name: Rust (Telemetry & Scheduler)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy -- -D warnings
+
+  cpp-check:
+    name: C++ (Interceptor)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linter
+        run: sudo apt-get install -y cppcheck
+      - run: cppcheck src/interceptor/
+
+  python-check:
+    name: Python (Benchmarks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ruff
+        run: pip install ruff
+      - run: ruff check benchmarks/

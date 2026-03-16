@@ -1,0 +1,21 @@
+# Rust artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# C/C++ build files (Interceptor)
+*.o
+*.so
+*.a
+build/
+.cmake/
+
+# Python (Benchmarks)
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# MacOS/IDE
+.DS_Store
+.vscode/
