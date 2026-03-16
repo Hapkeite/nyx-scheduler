@@ -1,0 +1,34 @@
+repos:
+  # General Hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Phase 1: C++ (Interceptor)
+  - repo: local
+    hooks:
+      - id: cppcheck
+        name: cppcheck
+        entry: cppcheck
+        language: system
+        types: [c++]
+        args: ["--error-exitcode=1", "src/interceptor/"]
+
+  # Phase 2 & 3: Rust (Telemetry & Scheduler)
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+      - id: fmt
+      - id: cargo-check
+      - id: clippy
+
+  # Phase 4: Python (Benchmarks)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format

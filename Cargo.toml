@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "src/telemetry",
+    "src/scheduler"
+]
+resolver = "2"
