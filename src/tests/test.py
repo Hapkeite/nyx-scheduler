@@ -2,8 +2,8 @@ import torch
 
 print(">>> [PYTHON] Starting PyTorch script...")
 
-x = torch.randn(2000, 2000, device='cuda')
-y = torch.randn(2000, 2000, device='cuda')
+x = torch.randn(2000, 2000, device="cuda")
+y = torch.randn(2000, 2000, device="cuda")
 z = x @ y
 
 print(">>> [PYTHON] Matrix math done. Deleting tensors...")
