@@ -23,7 +23,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match Nvml::init() {
         Ok(nvml) => {
             if let Ok(device) = nvml.device_by_index(0) {
-                println!("✅ Telemetry Daemon Online. Monitoring: {}", device.name().unwrap_or_default());
+                println!(
+                    "✅ Telemetry Daemon Online. Monitoring: {}",
+                    device.name().unwrap_or_default()
+                );
             }
         }
         Err(_) => {
@@ -54,7 +57,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         loop {
                             let util = device_thread.utilization_rates().unwrap();
                             let mem = device_thread.memory_info().unwrap();
-                            let temp = device_thread.temperature(nvml_wrapper::enum_wrappers::device::TemperatureSensor::Gpu).unwrap();
+                            let temp = device_thread
+                                .temperature(
+                                    nvml_wrapper::enum_wrappers::device::TemperatureSensor::Gpu,
+                                )
+                                .unwrap();
 
                             let state = GpuState {
                                 gpu_util_pct: util.gpu,
@@ -76,10 +83,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         // --- OUR NEW MOCK FALLBACK LOGIC ---
                         loop {
                             let state = GpuState {
-                                gpu_util_pct: 45,       // Fake 45% usage
-                                vram_used_mb: 4096,     // Fake 4GB used
-                                vram_total_mb: 8192,    // Fake 8GB total
-                                temp_c: 65,             // Fake 65°C temp
+                                gpu_util_pct: 45,    // Fake 45% usage
+                                vram_used_mb: 4096,  // Fake 4GB used
+                                vram_total_mb: 8192, // Fake 8GB total
+                                temp_c: 65,          // Fake 65°C temp
                             };
 
                             let mut json_msg = serde_json::to_string(&state).unwrap();
