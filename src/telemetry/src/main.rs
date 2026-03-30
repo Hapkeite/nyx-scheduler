@@ -1,5 +1,6 @@
 use nvml_wrapper::Nvml;
 use serde::Serialize;
+use std::ffi::OsStr;
 use std::fs;
 use std::io::Write;
 use std::os::unix::net::UnixListener;
@@ -17,7 +18,11 @@ struct GpuState {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nvml = Nvml::init()?;
+    // 1. Force nvml-wrapper to load the exact driver file using the builder
+    let nvml = Nvml::builder()
+        .lib_path(OsStr::new("/lib/x86_64-linux-gnu/libnvidia-ml.so.1"))
+        .init()?;
+    
     let device = nvml.device_by_index(0)?;
     println!("Telemetry Daemon Online. Monitoring: {}", device.name()?);
 
@@ -34,7 +39,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Client connected. Starting telemetry stream...");
 
                 thread::spawn(move || {
-                    let nvml_thread = Nvml::init().unwrap();
+                    // 2. Also update the thread's Nvml instance
+                    let nvml_thread = Nvml::builder()
+                        .lib_path(OsStr::new("/lib/x86_64-linux-gnu/libnvidia-ml.so.1"))
+                        .init()
+                        .unwrap();
+                        
                     let device_thread = nvml_thread.device_by_index(0).unwrap();
 
                     loop {
