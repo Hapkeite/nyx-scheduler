@@ -12,25 +12,31 @@ static cudaError_t (*real_cudaMalloc)(void **, size_t) = NULL;
 static cudaError_t (*real_cudaFree)(void *) = NULL;
 static cudaError_t (*real_cudaLaunchKernel)(const void *, dim3, dim3, void **, size_t, cudaStream_t) = NULL;
 
-// Helper function to send JSON to the Rust scheduler and wait for a reply
+// Use thread_local so each PyTorch thread has its own persistent connection
+int get_persistent_socket() {
+    static thread_local int sock = -1;
+    if (sock < 0) {
+        sock = socket(AF_UNIX, SOCK_STREAM, 0);
+        struct sockaddr_un addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sun_family = AF_UNIX;
+        strncpy(addr.sun_path, "/tmp/nyx.sock", sizeof(addr.sun_path) - 1);
+        if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
+            close(sock);
+            sock = -1;
+        }
+    }
+    return sock;
+}
+
 void send_to_scheduler(const char *json_msg) {
-  int sock = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (sock < 0) return; 
+    int sock = get_persistent_socket();
+    if (sock < 0) return; 
 
-  struct sockaddr_un addr;
-  memset(&addr, 0, sizeof(addr));
-  addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, "/tmp/nyx.sock", sizeof(addr.sun_path) - 1);
-
-  if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == 0) {
     send(sock, json_msg, strlen(json_msg), 0);
     char buffer[256];
     int n = recv(sock, buffer, sizeof(buffer) - 1, 0);
-    if (n > 0) {
-        buffer[n] = '\0';
-    }
-  }
-  close(sock);
+    // Do NOT close(sock) here!
 }
 
 // 1. Intercept cudaMalloc
